@@ -25,7 +25,7 @@ export function useCart() {
       return null;
     }
 
-    return data.id;
+    return data?.id || null;
   };
 
   // Get cart with items
