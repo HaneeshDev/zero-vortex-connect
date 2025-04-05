@@ -3,8 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface Product {
   id: string;
@@ -43,6 +46,18 @@ const products: Product[] = [
 ];
 
 const FeaturedProducts = () => {
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+
+  const handleAddToCart = (product: Product) => {
+    if (!user) {
+      toast.error('Please sign in to add items to your cart');
+      return;
+    }
+    
+    addToCart.mutate({ id: product.id });
+  };
+
   return (
     <section className="py-12 bg-background">
       <div className="container">
@@ -69,11 +84,22 @@ const FeaturedProducts = () => {
               </CardContent>
               <CardFooter className="flex justify-between items-center">
                 <span className="font-semibold text-lg">${product.price.toFixed(2)}</span>
-                <Link to={`/products/${product.id}`}>
-                  <Button className="bg-zerovortex-purple hover:bg-zerovortex-dark-purple">
-                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
-                  </Button>
-                </Link>
+                <Button 
+                  className="bg-zerovortex-purple hover:bg-zerovortex-dark-purple"
+                  onClick={() => handleAddToCart(product)}
+                  disabled={addToCart.isPending}
+                >
+                  {addToCart.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                    </>
+                  )}
+                </Button>
               </CardFooter>
             </Card>
           ))}
